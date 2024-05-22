@@ -1,5 +1,8 @@
-import React from "react";
+import React, { useEffect, useState} from "react";
 import styled from 'styled-components';
+import Input from "../form/input";
+import Select from "../form/select";
+import Button from "../form/submitButton";
 
 const FormContainer = styled.div`
   max-width: 500px;
@@ -14,58 +17,59 @@ const FormContainer = styled.div`
   background-color: #f9f9f9;
 `;
 
-const Input = styled.input`
-  width: 100%;
-  padding: 10px;
-  margin-bottom: 10px;
-  margin-top: 12px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  font-size: 16px;
-`;
 
-const Button = styled.button`
-  width: 100%;
-  padding: 10px;
-  border: none;
-  border-radius: 5px;
-  background-color: #222;
-  color: #f18631;
-  font-size: 16px;
-  cursor: pointer;
+const Form = ({btnText, handleSubmit, projectData}) => {
 
-  &:hover {
-    background-color: #f18631;
-    color:#222
+  const [categoria, setCategoria] = useState([])
+  const [project, setProject] = useState(projectData || {})
+
+  useEffect(() =>{
+    fetch("http://localhost:5000/categories", {
+      method: "GET",
+      headers: {
+          'Content-Type': 'application/json',
+      }
+    })
+    .then((resp) => resp.json())
+    .then((data) =>{
+        setCategoria(data)
+    })
+    .catch((err) => console.log(err))
+  }, [])
+
+  const submit = (e) =>{
+    e.preventDefault()
+    handleSubmit(project)
   }
-`;
 
-const Selec = styled.select`
-  margin-bottom: .8em
-`;
-
-
-const Form = () => {
-
+  function handleChange(e) {
+    setProject({...project, [ e.target.name ]: e.target.value })
+    console.log(project)
+  }
   return (
     <FormContainer>
       <h1>Formulário de Projetos</h1>
-      <form >
+      <form onSubmit={submit}>
         <Input
-          type="text"
-          name="nome"
-          placeholder="Insira o nome do projeto"
+          type= "text" 
+          name="name"
+          text="Nome do projeto"
+          placeholder="Insira o nome do projeto" 
+          handleOnChange={handleChange}
         />
         <Input
-          type="number"
-          name="number"
-          placeholder="insira o orçamento total"
+          type= "number" 
+          name="budget"
+          text="Orçamento do projeto"
+          placeholder="Insira o orçamento total" 
+          handleOnChange={handleChange}
         />
-        <Selec name="categoria-id">
-            <option>Selecione a categoria</option>
-            <option>TI</option>
-        </Selec>
-        <Button type="submit">Enviar</Button>
+        <Select
+          name="categoria_id"
+          text="Selecione uma Categoria"
+          options={categoria}
+        />
+        <Button text={btnText}/>
       </form>
     </FormContainer>
   );
